@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  daemon:
+    build:
+      context: ./go-daemon
+      dockerfile: Dockerfile
+    network_mode: host
+    volumes:
+      - /tmp:/tmp
+    restart: unless-stopped
+
+  test-publisher:
+    build:
+      context: ./python-sdk
+      dockerfile: Dockerfile
+    depends_on:
+      - daemon
+    network_mode: host
+    volumes:
+      - /tmp:/tmp
+    command: python examples/publisher.py
+
+  test-subscriber:
+    build:
+      context: ./python-sdk
+      dockerfile: Dockerfile
+    depends_on:
+      - daemon
+    network_mode: host
+    volumes:
+      - /tmp:/tmp
+    command: python examples/subscriber.py
