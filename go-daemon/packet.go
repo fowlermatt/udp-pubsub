@@ -4,7 +4,21 @@ import (
 	"strings"
 )
 
-// ParsePacket converts bytes to Packet struct
+const (
+	ProtocolVersion    byte = 0x01
+	MessageTypePublish byte = 0x01
+	MessageTypeAlive   byte = 0x02
+
+	PacketSize = 64
+)
+
+type Packet struct {
+	Version     byte
+	MessageType byte
+	TopicLen    byte
+	Payload     [61]byte
+}
+
 func ParsePacket(data []byte) *Packet {
 	p := &Packet{
 		Version:     data[0],
@@ -15,7 +29,6 @@ func ParsePacket(data []byte) *Packet {
 	return p
 }
 
-// CreatePacket creates a packet from topic and message
 func CreatePacket(topic, message string) []byte {
 	packet := make([]byte, PacketSize)
 	packet[0] = ProtocolVersion
@@ -24,7 +37,6 @@ func CreatePacket(topic, message string) []byte {
 	payload := topic + "|" + message
 	payloadBytes := []byte(payload)
 
-	// Truncate if needed
 	if len(payloadBytes) > 61 {
 		payloadBytes = payloadBytes[:61]
 	}
@@ -35,7 +47,6 @@ func CreatePacket(topic, message string) []byte {
 	return packet
 }
 
-// CreatePacketFromPayload creates packet from "topic|message" string
 func CreatePacketFromPayload(payload string) []byte {
 	parts := strings.SplitN(payload, "|", 2)
 	if len(parts) != 2 {
@@ -44,10 +55,9 @@ func CreatePacketFromPayload(payload string) []byte {
 	return CreatePacket(parts[0], parts[1])
 }
 
-// ExtractTopicAndMessage extracts topic and message from packet
 func ExtractTopicAndMessage(p *Packet) (string, string) {
 	payload := string(p.Payload[:])
-	payload = strings.TrimRight(payload, "\x00") // Remove null bytes
+	payload = strings.TrimRight(payload, "\x00")
 
 	parts := strings.SplitN(payload, "|", 2)
 	if len(parts) == 2 {

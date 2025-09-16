@@ -4,9 +4,17 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
+	"sync"
 
 	"github.com/willf/bloom"
 )
+
+type Client struct {
+	conn   net.Conn
+	filter *bloom.BloomFilter
+	topics []string
+	mu     sync.RWMutex
+}
 
 func NewClient(conn net.Conn) *Client {
 	return &Client{
